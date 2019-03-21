@@ -29,6 +29,7 @@ setup(
     keywords=["Microsoft", "Azure Devops", "Azure Functions"],
     install_requires=REQUIRES,
     packages=find_packages(exclude=["tests.*", "tests"]),
+    data_files=[("azure_functions_devops_build/yaml/templates", ["azure_functions_devops_build/yaml/templates/build.jinja"])],
     include_package_data=True,
     long_description="""\
     """
