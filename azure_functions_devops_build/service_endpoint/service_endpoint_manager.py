@@ -4,6 +4,7 @@
 # --------------------------------------------------------------------------------------------
 
 import json
+import os
 try:
     from subprocess import DEVNULL
 except ImportError:
@@ -87,7 +88,7 @@ class ServiceEndpointManager(BaseManager):
         command = "az ad sp create-for-rbac --o json --name http://" + service_principle_name
         try:
             token_resp = check_output(command, stderr=DEVNULL, shell=True).decode()
-        except CalledProcessError as cpe:
+        except CalledProcessError:
             raise RoleAssignmentException()
 
         token_resp_dict = json.loads(token_resp)
