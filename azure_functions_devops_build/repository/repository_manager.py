@@ -123,14 +123,3 @@ class RepositoryManager(BaseManager):
     def push_local_to_azure_devops_repository(self, repository_name, remote_prefix, force):
         remote_name = construct_git_remote_name(self._organization_name, self._project_name, repository_name, remote_prefix)
         git_push(remote_name, force)
-
-    def list_github_repositories(self):
-        """List github repositories if there are any from the current connection"""
-        project = self._get_project_by_name(self._project_name)
-        service_endpoints = self._service_endpoint_client.get_service_endpoints(project.id)
-        github_endpoint = next((endpoint for endpoint in service_endpoints if endpoint.type == "github"), None)
-        if github_endpoint is None:
-            return []
-        else:
-            return self._build_client.list_repositories(project.id, 'github', github_endpoint.id)
-
