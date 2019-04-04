@@ -8,7 +8,7 @@ import vsts.build.v4_1.models as build_models
 from vsts.exceptions import VstsServiceError
 from ..base.base_manager import BaseManager
 from ..pool.pool_manager import PoolManager
-from ..exceptions import GithubIntegrationRequestError
+from ..exceptions import GithubIntegrationRequestError, GithubContentNotFound
 
 class BuilderManager(BaseManager):
     """ Manage DevOps Builds
@@ -49,6 +49,10 @@ class BuilderManager(BaseManager):
         pool = self._get_pool_by_name(pool_name)
         pool_queue = build_models.agent_pool_queue.AgentPoolQueue(id=pool.id, name=pool.name)
         repository = self._get_github_repository_by_name(github_repository)
+
+        if repository is None:
+            raise GithubContentNotFound()
+
         github_properties = repository.properties
         build_repository = build_models.build_repository.BuildRepository(
             default_branch="master",
