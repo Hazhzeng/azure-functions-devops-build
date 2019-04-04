@@ -82,7 +82,7 @@ class OrganizationManager():
         user_id_aad = user_manager.get_user_id(msa=False)
         user_id_msa = user_manager.get_user_id(msa=True)
 
-        if (user_id_aad.id == user_id_msa.id):
+        if user_id_aad.id == user_id_msa.id:
             # Only need to do the one request as ids are the same
             organizations = self._list_organizations_request(user_id_aad.id)
         else:
