@@ -55,7 +55,10 @@ class GithubRepositoryManager(BaseGithubManager):
             ))
 
         if response.status_code == 404:
-            raise GithubContentNotFound()
+            raise GithubContentNotFound('Failed to find {repo}/{path}'.format(
+                repo=repository_fullname,
+                path=file_path
+            ))
 
         raise GithubIntegrationRequestError(response.status_code)
 
@@ -74,6 +77,12 @@ class GithubRepositoryManager(BaseGithubManager):
 
         if response.status_code == 401:
             raise GithubUnauthorizedError('Failed to write {repo}/{path}'.format(
+                repo=repository_fullname,
+                path=file_path
+            ))
+
+        if response.status_code == 404:
+            raise GithubContentNotFound('Failed to find {repo}/{path}'.format(
                 repo=repository_fullname,
                 path=file_path
             ))
