@@ -88,7 +88,7 @@ class ProjectManager(BaseManager):
         query_paramters['includeCapabilities'] = 'true'
 
         header_paramters = {}
-        if self._user_mgr.is_msa_ccount():
+        if self._user_mgr.is_msa_account():
             header_paramters['X-VSS-ForceMsaPassThrough'] = 'true'
 
         request = self._client.get(url, params=query_paramters)
@@ -112,7 +112,7 @@ class ProjectManager(BaseManager):
 
         header_paramters = {}
         header_paramters['Accept'] = 'application/json'
-        if self._user_mgr.is_msa_ccount():
+        if self._user_mgr.is_msa_account():
             header_paramters['X-VSS-ForceMsaPassThrough'] = 'true'
 
         request = self._create_project_client.get(url, params=query_paramters)

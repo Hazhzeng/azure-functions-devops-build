@@ -78,7 +78,7 @@ class OrganizationManager():
     def list_organizations(self):
         """List what organizations this user is part of"""
 
-        if not self._user_mgr.is_msa_ccount():
+        if not self._user_mgr.is_msa_account():
             # Only need to do the one request as ids are the same
             organizations = self._list_organizations_request(self._user_mgr.aad_id)
         else:
@@ -145,7 +145,7 @@ class OrganizationManager():
         header_paramters = {}
         header_paramters['Accept'] = 'application/json'
         header_paramters['Content-Type'] = 'application/json'
-        if self._user_mgr.is_msa_ccount():
+        if self._user_mgr.is_msa_account():
             header_paramters['X-VSS-ForceMsaPassThrough'] = 'true'
 
         #construct the payload

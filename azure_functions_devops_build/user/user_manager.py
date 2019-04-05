@@ -28,9 +28,9 @@ class UserManager(object):
         self._cache_aad_user = None
         self._cache_msa_user = None
 
-    def is_msa_ccount(self):
-        user_id_aad = self.get_user(msa=False)
-        user_id_msa = self.get_user(msa=True)
+    def is_msa_account(self):
+        user_id_aad = self.get_user(msa=False).id
+        user_id_msa = self.get_user(msa=True).id
         return user_id_aad != user_id_msa
 
     def get_user(self, msa=False):

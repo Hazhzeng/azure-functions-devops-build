@@ -38,7 +38,7 @@ class PoolManager(BaseManager):
 
         #construct header parameters
         header_paramters = {}
-        if self._user_mgr.is_msa_ccount():
+        if self._user_mgr.is_msa_account():
             header_paramters['X-VSS-ForceMsaPassThrough'] = 'true'
         header_paramters['Accept'] = 'application/json'
 
