@@ -131,34 +131,38 @@ class BuilderManager(BaseManager):
             curr_logs_status = {}
 
         result = []
-        for build_log_id in curr_logs_status:
+        for log_id in curr_logs_status:
             log_content = self._get_log_content_by_id(
                 build_id,
-                prev_logs_status.get(build_log_id),
-                curr_logs_status.get(build_log_id)
+                prev_logs_status.get(log_id),
+                curr_logs_status.get(log_id)
             )
             result.extend(log_content)
 
         return os.linesep.join(result)
 
     # Return the log content by single build_log
-    def _get_log_content_by_id(self, build_id, prev=None, curr=None):
-        if curr is None:
-            return []
+    def _get_log_content_by_id(self, build_id, prev_log_status=None, curr_log_status=None):
+        if prev_log_status is None or prev_log_status.line_count is None:
+            starting_line = 0
+        else:
+            starting_line = prev_log_status.line_count
 
-        starting_line = 0 if prev is None else prev.line_count
-        endling_line = curr.line_count
+        if curr_log_status is None or curr_log_status.line_count is None:
+            ending_line = 0
+        else:
+            ending_line = curr_log_status.line_count
 
-        if starting_line == endling_line:
+        if starting_line >= ending_line:
             return []
 
         try:
             result = self._build_client.get_build_log_lines(
                 self._project_name,
                 build_id,
-                curr.id,
+                curr_log_status.id,
                 starting_line,
-                endling_line
+                ending_line
             )
         except VstsServiceError as vse:
             raise BuildErrorException(vse.message)
