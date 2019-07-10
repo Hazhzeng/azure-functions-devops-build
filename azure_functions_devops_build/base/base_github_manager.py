@@ -6,6 +6,7 @@
 from msrest.service_client import ServiceClient
 from msrest import Configuration
 
+
 class BaseGithubManager(object):
 
     def __init__(self, base_url='https://api.github.com', pat=None):

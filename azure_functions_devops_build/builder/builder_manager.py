@@ -205,8 +205,7 @@ class BuilderManager(BaseManager):
             revision=project.revision,
             state=project.state,
             url=project.url,
-            visibility=project.visibility
-            )
+            visibility=project.visibility)
         return team_project_reference
 
     def _get_triggers(self):

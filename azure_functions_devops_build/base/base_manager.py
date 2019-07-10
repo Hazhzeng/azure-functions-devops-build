@@ -3,7 +3,8 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-from vsts.vss_connection import VssConnection
+from azure.devops.connection import Connection
+
 
 class BaseManager(object):
     """The basic manager which the other classes are build on
@@ -14,20 +15,24 @@ class BaseManager(object):
         creds : These are credentials for an Azure user
     """
 
-    def __init__(self, creds, organization_name="", project_name="", repository_name="", pool_name=""):
+    def __init__(self, creds, organization_name=None, project_name=None, repository_name=None, pool_name=None):
         # Create the relevant name attributes
-        self._organization_name = organization_name
-        self._project_name = project_name
         self._creds = creds
-        self._repository_name = repository_name
-        self._pool_name = pool_name
+        self._organization_name = organization_name or ""
+        self._project_name = project_name or ""
+        self._repository_name = repository_name or ""
+        self._pool_name = pool_name or ""
 
         # Create the relevant clients that are needed by the managers
-        self._connection = VssConnection(base_url='https://dev.azure.com/' + organization_name, creds=creds)
-        self._agent_client = self._connection.get_client("vsts.task_agent.v4_1.task_agent_client.TaskAgentClient")
+        self._connection = Connection(
+            base_url='https://dev.azure.com/' + organization_name,
+            creds=creds)
+
+        # Expose client
         self._build_client = self._connection.get_client('vsts.build.v4_1.build_client.BuildClient')
         self._core_client = self._connection.get_client('vsts.core.v4_0.core_client.CoreClient')
-        self._extension_management_client = self._connection.get_client('vsts.extension_management.v4_1.extension_management_client.ExtensionManagementClient') # pylint: disable=line-too-long
+        self._extension_management_client = self._connection.get_client(
+            'vsts.extension_management.v4_1.extension_management_client.ExtensionManagementClient')
         self._git_client = self._connection.get_client("vsts.git.v4_1.git_client.GitClient")
         self._release_client = self._connection.get_client('vsts.release.v4_1.release_client.ReleaseClient')
         self._service_endpoint_client = self._connection.get_client(

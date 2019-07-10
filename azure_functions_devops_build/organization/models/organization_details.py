@@ -5,6 +5,7 @@
 
 from msrest.serialization import Model
 
+
 class OrganizationDetails(Model):
     _attribute_map = {
         'accountId': {'key': 'accountId', 'type': 'str'},
@@ -31,29 +32,31 @@ class OrganizationDetails(Model):
         'failedPurchaseReason': {'key': 'failedPurchaseReason', 'type': 'str'}
     }
 
-    def __init__(self
-                , accountId=None
-                , accountHostType=None
-                , accountName=None
-                , subscriptionId=None
-                , subscriptionStatus=None
-                , resourceGroupName=None
-                , geoLocation=None
-                , locale=None
-                , regionDisplayName=None
-                , serviceUrls=None
-                , accountTenantId=None
-                , isAccountOwner=None
-                , resourceName=None
-                , subscriptionName=None
-                , isEligibleForPurchase=None
-                , isPrepaidFundSubscription=None
-                , isPricingAvailable=None
-                , subscriptionOfferCode=None
-                , offerType=None
-                , subscriptionTenantId=None
-                , subscriptionObjectId=None
-                , failedPurchaseReason=None):
+    def __init__(
+        self,
+        accountId=None,
+        accountHostType=None,
+        accountName=None,
+        subscriptionId=None,
+        subscriptionStatus=None,
+        resourceGroupName=None,
+        geoLocation=None,
+        locale=None,
+        regionDisplayName=None,
+        serviceUrls=None,
+        accountTenantId=None,
+        isAccountOwner=None,
+        resourceName=None,
+        subscriptionName=None,
+        isEligibleForPurchase=None,
+        isPrepaidFundSubscription=None,
+        isPricingAvailable=None,
+        subscriptionOfferCode=None,
+        offerType=None,
+        subscriptionTenantId=None,
+        subscriptionObjectId=None,
+        failedPurchaseReason=None
+    ):
         self.accountId = accountId
         self.accountHostType = accountHostType
         self.accountName = accountName

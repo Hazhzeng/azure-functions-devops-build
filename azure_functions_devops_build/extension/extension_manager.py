@@ -5,6 +5,7 @@
 
 from ..base.base_manager import BaseManager
 
+
 class ExtensionManager(BaseManager):
     """ Manage DevOps Extensions
 

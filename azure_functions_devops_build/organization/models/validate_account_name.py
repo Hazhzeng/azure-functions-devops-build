@@ -5,6 +5,7 @@
 
 from msrest.serialization import Model
 
+
 class ValidateAccountName(Model):
     _attribute_map = {
         'valid': {'key': 'valid', 'type': 'bool'},

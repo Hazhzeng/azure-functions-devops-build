@@ -5,6 +5,7 @@
 
 from msrest.serialization import Model
 
+
 class RegionDetails(Model):
     _attribute_map = {
         'name': {'key': 'name', 'type': 'str'},

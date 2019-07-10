@@ -30,7 +30,7 @@ class OrganizationManager():
         self._creds = creds
         self._config = Configuration(base_url=base_url)
         self._client = ServiceClient(creds, self._config)
-        #need to make a secondary client for the creating organization as it uses a different base url
+        # need to make a secondary client for the creating organization as it uses a different base url
         self._create_organization_config = Configuration(base_url=create_organization_url)
         self._create_organization_client = ServiceClient(creds, self._create_organization_config)
 
@@ -46,17 +46,20 @@ class OrganizationManager():
             return models.ValidateAccountName(valid=False, message="The organization_name cannot be None")
 
         if re.search("[^0-9A-Za-z-]", organization_name):
-            return models.ValidateAccountName(valid=False, message="""The name supplied contains forbidden characters.
-                                                                      Only alphanumeric characters and dashes are allowed.
-                                                                      Please try another organization name.""")
-        #construct url
+            return models.ValidateAccountName(
+                valid=False,
+                message="""
+                The name supplied contains forbidden characters.
+                Only alphanumeric characters and dashes are allowed.
+                Please try another organization name.""")
+        # Construct url
         url = '/_AzureSpsAccount/ValidateAccountName'
 
-        #construct query parameters
+        # Construct query parameters
         query_paramters = {}
         query_paramters['accountName'] = organization_name
 
-        #construct header parameters
+        # Construct header parameters
         header_paramters = {}
         header_paramters['Accept'] = 'application/json'
 
@@ -83,20 +86,20 @@ class OrganizationManager():
             organizations = self._list_organizations_request(self._user_mgr.aad_id)
         else:
             # Need to do a request for each of the ids and then combine them (disabled)
-            #organizations_aad = self._list_organizations_request(self._user_mgr.aad_id, msa=False)
-            #organizations_msa = self._list_organizations_request(self._user_mgr.msa_id, msa=True)
-            #organizations = organizations_msa
+            organizations_aad = self._list_organizations_request(self._user_mgr.aad_id, msa=False)
+            organizations_msa = self._list_organizations_request(self._user_mgr.msa_id, msa=True)
+            organizations = organizations_msa
 
             # Overwrite merge aad organizations with msa organizations
-            #duplicated_aad_orgs = []
-            #for msa_org in organizations_msa.value:
-            #    duplicated_aad_orgs.extend([
-            #        o for o in organizations_aad.value if o.accountName == msa_org.accountName
-            #    ])
-            #filtered_organizations_aad = [o for o in organizations_aad.value if (o not in duplicated_aad_orgs)]
+            duplicated_aad_orgs = []
+            for msa_org in organizations_msa.value:
+                duplicated_aad_orgs.extend([
+                    o for o in organizations_aad.value if o.accountName == msa_org.accountName
+                ])
+            filtered_organizations_aad = [o for o in organizations_aad.value if (o not in duplicated_aad_orgs)]
 
-            #organizations.value += list(filtered_organizations_aad)
-            #organizations.count = len(organizations.value)
+            organizations.value += list(filtered_organizations_aad)
+            organizations.count = len(organizations.value)
             organizations = self._list_organizations_request(self._user_mgr.msa_id, msa=True)
 
         return organizations
@@ -111,7 +114,7 @@ class OrganizationManager():
         query_paramters['inlcudeDisabledAccounts'] = False
         query_paramters['providerNamespaceId'] = 'VisualStudioOnline'
 
-        #construct header parameters
+        # Construct header parameters
         header_parameters = {}
         header_parameters['X-VSS-ForceMsaPassThrough'] = 'true' if msa else 'false'
         header_parameters['Accept'] = 'application/json'
@@ -133,22 +136,22 @@ class OrganizationManager():
 
     def create_organization(self, region_code, organization_name):
         """Create a new organization for user"""
-        url = '/_apis/HostAcquisition/collections'
+        url = '/_apis/accounts'
 
-        #construct query parameters
+        # Construct query parameters
         query_paramters = {}
         query_paramters['collectionName'] = organization_name
         query_paramters['preferredRegion'] = region_code
-        query_paramters['api-version'] = '4.0-preview.1'
+        query_paramters['api-version'] = '5.0'
 
-        #construct header parameters
+        # Construct header parameters
         header_paramters = {}
         header_paramters['Accept'] = 'application/json'
         header_paramters['Content-Type'] = 'application/json'
         if self._user_mgr.is_msa_account():
             header_paramters['X-VSS-ForceMsaPassThrough'] = 'true'
 
-        #construct the payload
+        # Construct the payload
         payload = {}
         payload['VisualStudio.Services.HostResolution.UseCodexDomainForHostCreation'] = 'true'
 
@@ -173,7 +176,7 @@ class OrganizationManager():
         # Construct URL
         url = '/_apis/hostacquisition/regions'
 
-        #construct header parameters
+        # Construct header parameters
         header_paramters = {}
         header_paramters['Accept'] = 'application/json'
 

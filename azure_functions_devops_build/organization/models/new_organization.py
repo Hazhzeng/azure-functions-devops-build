@@ -5,6 +5,7 @@
 
 from msrest.serialization import Model
 
+
 class NewOrganization(Model):
     _attribute_map = {
         'id': {'key': 'id', 'type': 'str'},

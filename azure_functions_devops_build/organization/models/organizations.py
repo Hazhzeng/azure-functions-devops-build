@@ -5,6 +5,7 @@
 
 from msrest.serialization import Model
 
+
 class Organizations(Model):
     _attribute_map = {
         'count': {'key': 'count', 'type': 'int'},
