@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"path": "."
+		}
+	],
+	"settings": {
+		"python.pythonPath": "env/Scripts/python.exe",
+		"python.linting.flake8Enabled": true,
+		"python.linting.flake8Args": ["-j 2"],
+		"python.linting.pylintEnabled": true,
+	}
+}
