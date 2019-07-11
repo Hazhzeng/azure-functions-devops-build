@@ -3,9 +3,12 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
+
 class BaseException(Exception):
     def __init__(self, message=None):
+        super().__init__()
         self.message = message
+
 
 class GitOperationException(BaseException):
     pass
@@ -36,4 +39,12 @@ class GithubIntegrationRequestError(BaseException):
 
 
 class GithubUnauthorizedError(BaseException):
+    pass
+
+
+class NoConnectionCredentialError(BaseException):
+    pass
+
+
+class NoConnectionOrganzationError(BaseException):
     pass

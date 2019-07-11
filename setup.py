@@ -10,9 +10,11 @@ from setuptools import setup, find_packages
 NAME = "azure-functions-devops-build"
 VERSION = "0.0.22"
 
-REQUIRES = ["msrest",
-            "vsts",
-            "jinja2"]
+REQUIRES = [
+    "Jinja2==2.10.1",
+    "azure-devops==5.0.0b9",
+    "msrest==0.6.8"
+]
 
 file_directory = path.abspath(path.dirname(__file__))
 
