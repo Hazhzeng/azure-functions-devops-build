@@ -3,7 +3,9 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
+import json
 import logging
+from subprocess import check_output, CalledProcessError
 from msrest.service_client import ServiceClient
 from msrest import Configuration, Deserializer
 from msrest.exceptions import HttpOperationError
@@ -20,6 +22,7 @@ class UserManager(object):
         """Inits UserManager as to be able to send the right requests"""
         self._config = Configuration(base_url=base_url)
         self._client = ServiceClient(creds, self._config)
+        self._cached_arm_token = None
         #create the deserializer for the models
         client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
         self._deserialize = Deserializer(client_models)
@@ -27,6 +30,14 @@ class UserManager(object):
         # create cache for two user type
         self._cache_aad_user = None
         self._cache_msa_user = None
+
+    def get_access_token(self):
+        if self._cached_arm_token is None:
+            command = "az account get-access-token"
+            token_resp = check_output(command, shell=True).decode()
+            account = json.loads(token_resp)
+            self._cached_arm_token = account.get("accessToken")
+        return self._cached_arm_token
 
     def is_msa_account(self):
         user_id_aad = self.get_user(msa=False).id

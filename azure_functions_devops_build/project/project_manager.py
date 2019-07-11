@@ -27,7 +27,7 @@ class ProjectManager(BaseManager):
         Otherwise see BaseManager
     """
 
-    def __init__(self, base_url='https://{}.visualstudio.com', organization_name="", creds=None,
+    def __init__(self, base_url='https://dev.azure.com/{}', organization_name="", creds=None,
                  create_project_url='https://dev.azure.com'):
         """Inits Project as per BaseManager and adds relevant other needed fields"""
         super(ProjectManager, self).__init__(creds, organization_name=organization_name)
@@ -67,13 +67,14 @@ class ProjectManager(BaseManager):
 
     def list_projects(self):
         """Lists the current projects within an organization"""
-        url = '/_apis/projects'
 
         # First pass without X-VSS-ForceMsaPassThrough header
-        response = self._list_projects_request(url)
+        response = self._list_projects_request()
 
         deserialized = None
-        if response.status_code // 100 != 2:
+        if response.status_code == 203:
+            return models.Projects(count=0, value=[])
+        elif response.status_code == 200:
             logging.error("GET %s", response.url)
             logging.error("response: %s", response.status_code)
             logging.error(response.text)
@@ -83,16 +84,27 @@ class ProjectManager(BaseManager):
 
         return deserialized
 
-    def _list_projects_request(self, url):
+    def _list_projects_request(self):
+        url = '/_apis/git/repositories'
+
         query_paramters = {}
-        query_paramters['includeCapabilities'] = 'true'
+        query_paramters['api-version'] = '5.0'
 
         header_paramters = {}
         if self._user_mgr.is_msa_account():
+            print("IS IT MSA ACCOUNT")
             header_paramters['X-VSS-ForceMsaPassThrough'] = 'true'
+        else:
+            print("IS IT AAD ACCOUNT")
+            header_paramters['X-VSS-ForceMsaPassThrough'] = 'false'
+        
+        header_paramters['Content-Type'] = 'application/json'
+        header_paramters['Accept'] = 'application/json'
+        header_paramters['Authorization'] = 'Bearer ' + self._user_mgr.get_access_token()
 
         request = self._client.get(url, params=query_paramters)
         response = self._client.send(request, headers=header_paramters)
+        print(response.__dict__)
         return response
 
     def _poll_project(self, project_id):

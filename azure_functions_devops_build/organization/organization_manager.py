@@ -77,42 +77,38 @@ class OrganizationManager():
 
     def list_organizations(self):
         """List what organizations this user is part of"""
+        # Need to do a request for each of the ids and then combine them (disabled)
+        organizations_aad = self._list_organizations_request(self._user_mgr.aad_id, msa=False)
+        organizations_msa = self._list_organizations_request(self._user_mgr.msa_id, msa=True)
+        organizations = organizations_msa
 
-        if not self._user_mgr.is_msa_account():
-            # Only need to do the one request as ids are the same
-            organizations = self._list_organizations_request(self._user_mgr.aad_id)
-        else:
-            # Need to do a request for each of the ids and then combine them (disabled)
-            #organizations_aad = self._list_organizations_request(self._user_mgr.aad_id, msa=False)
-            #organizations_msa = self._list_organizations_request(self._user_mgr.msa_id, msa=True)
-            #organizations = organizations_msa
+        # Overwrite merge aad organizations with msa organizations
+        duplicated_aad_orgs = []
+        for msa_org in organizations_msa.value:
+            duplicated_aad_orgs.extend([
+                o for o in organizations_aad.value if o.accountId == msa_org.accountId
+            ])
+        filtered_organizations_aad = [o for o in organizations_aad.value if (o not in duplicated_aad_orgs)]
 
-            # Overwrite merge aad organizations with msa organizations
-            #duplicated_aad_orgs = []
-            #for msa_org in organizations_msa.value:
-            #    duplicated_aad_orgs.extend([
-            #        o for o in organizations_aad.value if o.accountName == msa_org.accountName
-            #    ])
-            #filtered_organizations_aad = [o for o in organizations_aad.value if (o not in duplicated_aad_orgs)]
-
-            #organizations.value += list(filtered_organizations_aad)
-            #organizations.count = len(organizations.value)
-            organizations = self._list_organizations_request(self._user_mgr.msa_id, msa=True)
+        organizations.value += list(filtered_organizations_aad)
+        organizations.count = len(organizations.value)
 
         return organizations
 
     def _list_organizations_request(self, member_id, msa=False):
-        url = '/_apis/Commerce/Subscription'
+        url = '/_apis/accounts'
 
         query_paramters = {}
+        query_paramters['api-version'] = '5.0-preview.1'
         query_paramters['memberId'] = member_id
-        query_paramters['includeMSAAccounts'] = True
-        query_paramters['queryOnlyOwnerAccounts'] = True
-        query_paramters['inlcudeDisabledAccounts'] = False
-        query_paramters['providerNamespaceId'] = 'VisualStudioOnline'
+        #query_paramters['includeMSAAccounts'] = True
+        #query_paramters['queryOnlyOwnerAccounts'] = True
+        #query_paramters['inlcudeDisabledAccounts'] = False
+        #query_paramters['providerNamespaceId'] = 'VisualStudioOnline'
 
         #construct header parameters
         header_parameters = {}
+        header_parameters['Authorization'] = 'Bearer ' + self._user_mgr.get_access_token()
         header_parameters['X-VSS-ForceMsaPassThrough'] = 'true' if msa else 'false'
         header_parameters['Accept'] = 'application/json'
 
@@ -145,8 +141,11 @@ class OrganizationManager():
         header_paramters = {}
         header_paramters['Accept'] = 'application/json'
         header_paramters['Content-Type'] = 'application/json'
+        header_paramters['Authorization'] = 'Bearer ' + self._user_mgr.get_access_token()
         if self._user_mgr.is_msa_account():
             header_paramters['X-VSS-ForceMsaPassThrough'] = 'true'
+        else:
+            header_paramters['X-VSS-ForceMsaPassThrough'] = 'false'
 
         #construct the payload
         payload = {}
