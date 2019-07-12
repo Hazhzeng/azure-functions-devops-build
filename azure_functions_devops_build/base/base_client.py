@@ -3,11 +3,7 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-
-from .base_information import BaseInformation
-
-
-class BaseClient(BaseInformation):
+class BaseClient(object):
 
     def __init__(self, information):
         self._information = information
@@ -48,3 +44,7 @@ class BaseClient(BaseInformation):
     @property
     def github_pat(self):
         return self._information.get_github_pat()
+
+    @property
+    def credential(self):
+        return self._information.get_credential()

@@ -33,13 +33,12 @@ class GithubRepositoryManager(object):
                     repo=repository_fullname,
                     path=file_path
                 ))
-            elif gire.message == 404:
+            if gire.message == 404:
                 raise GithubContentNotFound('Failed to find {repo}/{path}'.format(
                     repo=repository_fullname,
                     path=file_path
                 ))
-            else:
-                raise GithubIntegrationRequestError(str(gire.message))
+            raise GithubIntegrationRequestError(str(gire.message))
         return result
 
     def put_content(self, repository_fullname, file_path, data):
@@ -51,13 +50,12 @@ class GithubRepositoryManager(object):
                     repo=repository_fullname,
                     path=file_path
                 ))
-            elif gire.message == 404:
+            if gire.message == 404:
                 raise GithubContentNotFound('Failed to find {repo}/{path}'.format(
                     repo=repository_fullname,
                     path=file_path
                 ))
-            else:
-                raise GithubIntegrationRequestError(str(gire.message))
+            raise GithubIntegrationRequestError(str(gire.message))
         return result
 
     def commit_file(self, repository_fullname, file_path, commit_message, file_data, sha=None, encode='utf-8'):

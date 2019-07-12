@@ -33,30 +33,29 @@ class OrganizationDetails(Model):
     }
 
     def __init__(
-        self,
-        accountId=None,
-        accountHostType=None,
-        accountName=None,
-        subscriptionId=None,
-        subscriptionStatus=None,
-        resourceGroupName=None,
-        geoLocation=None,
-        locale=None,
-        regionDisplayName=None,
-        serviceUrls=None,
-        accountTenantId=None,
-        isAccountOwner=None,
-        resourceName=None,
-        subscriptionName=None,
-        isEligibleForPurchase=None,
-        isPrepaidFundSubscription=None,
-        isPricingAvailable=None,
-        subscriptionOfferCode=None,
-        offerType=None,
-        subscriptionTenantId=None,
-        subscriptionObjectId=None,
-        failedPurchaseReason=None
-    ):
+                self,
+                accountId=None,
+                accountHostType=None,
+                accountName=None,
+                subscriptionId=None,
+                subscriptionStatus=None,
+                resourceGroupName=None,
+                geoLocation=None,
+                locale=None,
+                regionDisplayName=None,
+                serviceUrls=None,
+                accountTenantId=None,
+                isAccountOwner=None,
+                resourceName=None,
+                subscriptionName=None,
+                isEligibleForPurchase=None,
+                isPrepaidFundSubscription=None,
+                isPricingAvailable=None,
+                subscriptionOfferCode=None,
+                offerType=None,
+                subscriptionTenantId=None,
+                subscriptionObjectId=None,
+                failedPurchaseReason=None):
         self.accountId = accountId
         self.accountHostType = accountHostType
         self.accountName = accountName

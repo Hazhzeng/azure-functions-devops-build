@@ -8,9 +8,8 @@ class PoolDetails(Model):
         'pool': {'key': 'subscriptionId', 'type': 'PoolDetailsDepth'}
     }
 
-    def __init__(self, id=None, projectId=None, name=None,pool=None):
+    def __init__(self, id=None, projectId=None, name=None, pool=None):
         self.id = id
         self.projectId = projectId
         self.name = name
         self.pool = pool
-

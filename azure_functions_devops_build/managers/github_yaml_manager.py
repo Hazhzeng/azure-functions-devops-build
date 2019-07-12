@@ -6,16 +6,14 @@
 from os import path
 from datetime import datetime
 from jinja2 import Environment, FileSystemLoader, select_autoescape
-from ..repository.github_repository_manager import GithubRepositoryManager
-from ..base.base_github_manager import BaseGithubManager
+from .github_repository_manager import GithubRepositoryManager
 from ..constants import (WINDOWS, PYTHON, NODE, DOTNET, POWERSHELL)
 from ..exceptions import LanguageNotSupportException
 
 
-class GithubYamlManager(BaseGithubManager):
+class GithubYamlManager(object):
 
     def __init__(self, language, app_type, github_pat, github_repository):
-        super(GithubYamlManager, self).__init__(pat=github_pat)
         self._github_repo_mgr = GithubRepositoryManager(pat=github_pat)
         self._github_repository = github_repository
         self._language = language
@@ -54,8 +52,7 @@ class GithubYamlManager(BaseGithubManager):
 
         if overwrite:
             return self._overwrite_yaml_file(yaml)
-        else:
-            return self._commit_yaml_file(yaml)
+        return self._commit_yaml_file(yaml)
 
     def _commit_yaml_file(self, data):
         return self._github_repo_mgr.commit_file(
@@ -64,8 +61,7 @@ class GithubYamlManager(BaseGithubManager):
             file_data=data,
             commit_message="Created azure-pipelines.yml by Azure CLI ({time})".format(
                 time=datetime.utcnow().strftime("%Y-%m-%d %X UTC")
-            ),
-        )
+            ))
 
     def _overwrite_yaml_file(self, data):
         sha = self._github_repo_mgr.get_content(

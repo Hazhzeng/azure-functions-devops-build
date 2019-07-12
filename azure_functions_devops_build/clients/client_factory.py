@@ -15,6 +15,11 @@ from .release_client import ReleaseClient
 from .service_endpoint_client import ServiceEndpointClient
 from .task_agent_client import TaskAgentClient
 from .github_client import GithubClient
+from .region_client import RegionClient
+from .user_client import UserClient
+from .organization_listing_client import OrganizationListingClient
+from .organization_creation_client import OrganizationCreationClient
+from .devops_rest_client import DevopsRestClient
 
 
 class ClientFactory(object):
@@ -27,6 +32,11 @@ class ClientFactory(object):
     _cached_service_endpoint_client = None
     _cached_task_agent_client = None
     _cached_github_client = None
+    _cached_region_client = None
+    _cached_user_client = None
+    _cached_organization_listing_client = None
+    _cached_organization_creation_client = None
+    _cacehd_devops_rest_client = None
 
     @classmethod
     def get_core_client(cls, information):
@@ -101,12 +111,57 @@ class ClientFactory(object):
     @classmethod
     def get_github_client(cls, information):
         if cls._cached_github_client is None:
-            connection = cls._create_connection(information)
-            cls._cached_github_client = GithubClient(connection, information)
+            cls._cached_github_client = GithubClient(information)
         else:
             cls._cached_github_client.update_information(information)
 
         return cls._cached_github_client
+
+    @classmethod
+    def get_region_client(cls, information):
+        if cls._cached_region_client is None:
+            cls._cached_region_client = RegionClient(information)
+        else:
+            cls._cached_region_client.update_information(information)
+
+        return cls._cached_region_client
+
+    @classmethod
+    def get_user_client(cls, information):
+        if cls._cached_user_client is None:
+            cls._cached_user_client = UserClient(information)
+        else:
+            cls._cached_user_client.update_information(information)
+
+        return cls._cached_user_client
+
+    @classmethod
+    def get_organization_listing_client(cls, information):
+        if cls._cached_organization_listing_client is None:
+            cls._cached_organization_listing_client = OrganizationListingClient(information)
+        else:
+            cls._cached_organization_listing_client.update_information(information)
+
+        return cls._cached_organization_listing_client
+
+    @classmethod
+    def get_organization_creation_client(cls, information):
+        if cls._cached_organization_creation_client is None:
+            cls._cached_organization_creation_client = OrganizationCreationClient(information)
+        else:
+            cls._cached_organization_creation_client.update_information(information)
+
+        return cls._cached_organization_creation_client
+
+    @classmethod
+    def get_devops_rest_client(cls, information):
+        if cls._cached_devops_rest_client is None:
+            cls._cached_devops_rest_client = DevopsRestClient(information)
+        else:
+            cls._cached_devops_rest_client.update_information(information)
+
+        return cls._cached_devops_rest_client
+
 
     @classmethod
     def _create_connection(cls, information):

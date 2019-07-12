@@ -12,6 +12,7 @@ try:
 except ImportError:
     DEVNULL = open(os.devnull, 'w')
 from subprocess import STDOUT, check_call, check_output, CalledProcessError
+from ..constants import SERVICE_ENDPOINT_DOMAIN
 from ..exceptions import GitOperationException
 
 
@@ -120,7 +121,10 @@ def construct_git_remote_name(organization_name, project_name, repository_name, 
     return remote_name
 
 
-def construct_git_remote_url(organization_name, project_name, repository_name, domain_name="dev.azure.com"):
+def construct_git_remote_url(organization_name, project_name, repository_name, domain_name=None):
+    if domain_name is None:
+        domain_name = SERVICE_ENDPOINT_DOMAIN
+
     url = "https://{domain}/{org}/{proj}/_git/{repo}".format(
         domain=domain_name,
         org=organization_name,

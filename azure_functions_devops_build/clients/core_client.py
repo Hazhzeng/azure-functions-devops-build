@@ -13,12 +13,9 @@ class CoreClient(BaseClient):
         self._client = connection.clients.get_core_client()
 
     def get_project_by_name(self, project_name=None):
-        """
-        :type project_name: str
-        """
         projects = self._client.get_projects()
 
         if project_name is None:
-            project_name = self._information.get_project()
+            project_name = self.project
 
         return next((p for p in projects if p.name == project_name), None)

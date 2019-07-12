@@ -69,7 +69,7 @@ class BuilderManager(object):
         if not pool_obj:
             raise BuildErrorException("pool_obj is None")
 
-        github_service_endpoint = self._service_endpoint.get_github_service_endpoints()
+        github_service_endpoint = self._service_endpoint.get_service_endpoint(endpoint_type="github")
         repository_obj = self._build.get_github_repository_by_name(github_service_endpoint, github_repository)
         if not repository_obj:
             raise BuildErrorException("repository_obj is None")

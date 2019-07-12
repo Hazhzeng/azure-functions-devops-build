@@ -12,8 +12,6 @@ from azure.devops.v5_1.build.models import (
     Build)
 from ..base.base_client import BaseClient
 from ..utils.builder_utils import get_build_process, get_build_triggers
-from ..exceptions import (
-    BuildErrorException)
 
 
 class BuildClient(BaseClient):
@@ -154,11 +152,17 @@ class BuildClient(BaseClient):
             service_endpoint_id=github_service_endpoint.id,
             repository=github_repository_name
         )
-        repository_match = next((r for r in repositories.repositories if r.full_name == github_repository_name), None)
-        return repository_match
+        return next((r for r in repositories.repositories if r.full_name == github_repository_name), None)
 
     def get_artifacts(self, build_id):
         if not self.project:
             raise ValueError("self.project")
 
         return self._client.get_artifacts(self.project, build_id)
+
+    def get_artifact_by_name(self, build_id, name):
+        if not self.project:
+            raise ValueError("self.project")
+
+        artifacts = self._client.get_artifacts(self.project, build_id)
+        return next((a for a in artifacts if a.name == name), None)

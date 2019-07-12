@@ -6,12 +6,14 @@
 from msrest.serialization import Model
 
 
-class Regions(Model):
+class OperationReference(Model):
     _attribute_map = {
-        'count': {'key': 'count', 'type': 'int'},
-        'value': {'key': 'value', 'type': '[RegionDetails]'},
+        'id': {'key': 'id', 'type': 'str'},
+        'status': {'key': 'status', 'type': 'str'},
+        'url': {'key': 'url', 'type': 'str'},
     }
 
-    def __init__(self, count=None, value=None):
-        self.count = count
-        self.value = value
+    def __init__(self, id=None, status=None, url=None):
+        self.id = id
+        self.status = status
+        self.url = url

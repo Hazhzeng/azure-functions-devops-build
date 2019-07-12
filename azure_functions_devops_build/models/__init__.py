@@ -18,6 +18,8 @@ from .projects import Projects
 from .project_poll import ProjectPoll
 from .project_failed import ProjectFailed
 from .github_connection import GithubConnection
+from .operation_reference import OperationReference
+
 
 __all__ = [
     'User',
@@ -35,4 +37,5 @@ __all__ = [
     'Projects',
     'ProjectFailed',
     'GithubConnection',
+    'OperationReference'
 ]

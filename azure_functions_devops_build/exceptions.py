@@ -4,47 +4,47 @@
 # --------------------------------------------------------------------------------------------
 
 
-class BaseException(Exception):
+class CliBaseException(Exception):
     def __init__(self, message=None):
         super().__init__()
         self.message = message
 
 
-class GitOperationException(BaseException):
+class GitOperationException(CliBaseException):
     pass
 
 
-class RoleAssignmentException(BaseException):
+class RoleAssignmentException(CliBaseException):
     pass
 
 
-class LanguageNotSupportException(BaseException):
+class LanguageNotSupportException(CliBaseException):
     pass
 
 
-class BuildErrorException(BaseException):
+class BuildErrorException(CliBaseException):
     pass
 
 
-class ReleaseErrorException(BaseException):
+class ReleaseErrorException(CliBaseException):
     pass
 
 
-class GithubContentNotFound(BaseException):
+class GithubContentNotFound(CliBaseException):
     pass
 
 
-class GithubIntegrationRequestError(BaseException):
+class GithubIntegrationRequestError(CliBaseException):
     pass
 
 
-class GithubUnauthorizedError(BaseException):
+class GithubUnauthorizedError(CliBaseException):
     pass
 
 
-class NoConnectionCredentialError(BaseException):
+class NoConnectionCredentialError(CliBaseException):
     pass
 
 
-class NoConnectionOrganzationError(BaseException):
+class NoConnectionOrganzationError(CliBaseException):
     pass

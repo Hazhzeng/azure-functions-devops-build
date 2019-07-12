@@ -20,5 +20,3 @@ def get_build_triggers():
     trigger["triggerType"] = "continuousIntegration"
     triggers = [trigger]
     return triggers
-
-

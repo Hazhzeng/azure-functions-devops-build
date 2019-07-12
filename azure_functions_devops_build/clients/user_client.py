@@ -3,26 +3,19 @@
 # Licensed under the MIT License. See License.txt in the project root for license information.
 # --------------------------------------------------------------------------------------------
 
-import logging
 from msrest.service_client import ServiceClient
-from msrest import Configuration, Deserializer
+from msrest import Configuration
 from msrest.exceptions import HttpOperationError
-from . import models
+from ..base.base_client import BaseClient
+from ..utils.model_utils import ModelUtils
 
-class UserManager(object):
-    """ Get details about a user
 
-    Attributes:
-        See BaseManager
-    """
+class UserClient(BaseClient):
 
-    def __init__(self, base_url='https://peprodscussu2.portalext.visualstudio.com', creds=None):
-        """Inits UserManager as to be able to send the right requests"""
-        self._config = Configuration(base_url=base_url)
-        self._client = ServiceClient(creds, self._config)
-        #create the deserializer for the models
-        client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
-        self._deserialize = Deserializer(client_models)
+    def __init__(self, information):
+        super(UserClient, self).__init__(information)
+        self._config = Configuration(base_url='https://peprodscussu2.portalext.visualstudio.com')
+        self._client = ServiceClient(self.credential, self._config)
 
         # create cache for two user type
         self._cache_aad_user = None
@@ -46,15 +39,10 @@ class UserManager(object):
         request = self._client.get('/_apis/AzureTfs/UserContext')
         response = self._client.send(request, header_parameters)
 
-        # Handle Response
-        deserialized = None
         if response.status_code // 100 != 2:
-            logging.error("GET %s", request.url)
-            logging.error("response: %s", response.status_code)
-            logging.error(response.text)
-            raise HttpOperationError(self._deserialize, response)
+            deserialized = ModelUtils.deserialize_response('User', response)
         else:
-            deserialized = self._deserialize('User', response)
+            raise HttpOperationError(ModelUtils.get_deserializer(), response)
 
         # Write to cache
         if msa is True and self._cache_msa_user is None:
@@ -71,6 +59,3 @@ class UserManager(object):
     @property
     def msa_id(self):
         return self.get_user(msa=True).id
-
-    def close_connection(self):
-        self._client.close()
