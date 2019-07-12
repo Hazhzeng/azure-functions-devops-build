@@ -12,6 +12,7 @@ from vsts.exceptions import VstsServiceError
 import vsts.core.v4_1.models.team_project as team_project
 from ..user.user_manager import UserManager
 from ..base.base_manager import BaseManager
+from ..organization.organization_manager import OrganizationManager
 from . import models
 
 
@@ -35,6 +36,7 @@ class ProjectManager(BaseManager):
         self._config = Configuration(base_url=base_url)
         self._client = ServiceClient(creds, self._config)
         self._credentials = creds
+        self._organization_name = organization_name
         # Need to make a secondary client for the creating project as it uses a different base url
         self._create_project_config = Configuration(base_url=create_project_url)
         self._create_project_client = ServiceClient(creds, self._create_project_config)
@@ -43,27 +45,42 @@ class ProjectManager(BaseManager):
         self._user_mgr = UserManager(creds=self._creds)
 
     def create_project(self, projectName):
-        """Create a new project for an organization"""
-        try:
-            capabilities = dict()
-            capabilities['versioncontrol'] = {"sourceControlType": "Git"}
-            capabilities['processTemplate'] = {"templateTypeId": "adcc42ab-9882-485e-a3ed-7678f01f66bc"}
-            project = team_project.TeamProject(
-                description="Azure Functions Devops Build created project",
-                name=projectName,
-                visibility=0,
-                capabilities=capabilities
-            )
-            queue_object = self._core_client.queue_create_project(project)
-            queue_id = queue_object.id
-            self._poll_project(queue_id)
-            # Sleep as there is normally a gap between project finishing being made and when we can retrieve it
-            time.sleep(1)
-            project = self._get_project_by_name(projectName)
-            project.valid = True
-            return project
-        except VstsServiceError as e:
-            return models.ProjectFailed(e)
+        url = '/_apis/projects'
+
+        is_msa = OrganizationManager.is_msa_organization(self._organization_name)
+        print("is_msa: " + str(is_msa))
+        request = self._client.post(url, params={
+            'api-version': '5.0'
+        })
+        response = self._client.send(request, headers={
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-VSS-ForceMsaPassThrough': 'true' if is_msa else 'false'
+        }, content={
+            'name': projectName,
+            'description': 'Azure Functions Devops Build created project',
+            'capabilities': {
+                'versioncontrol': {
+                    'sourceControlType': 'Git',
+                },
+                'processTemplate': {
+                    'templateTypeId': 'adcc42ab-9882-485e-a3ed-7678f01f66bc'
+                }
+            },
+        })
+
+        if response.status_code // 100 != 2:
+            return models.ProjectFailed('Failed to create project')
+
+        time.sleep(5)
+        projects = self.list_projects()
+        p = [p for p in projects.value if p.name.lower() == projectName.lower()]
+        if not p:
+            return models.ProjectFailed('Failed to find created project')
+
+        project = p[0]
+        project.valid = True
+        return project
 
     def list_projects(self):
         """Lists the current projects within an organization"""
@@ -75,36 +92,28 @@ class ProjectManager(BaseManager):
         if response.status_code == 203:
             return models.Projects(count=0, value=[])
         elif response.status_code == 200:
-            logging.error("GET %s", response.url)
-            logging.error("response: %s", response.status_code)
-            logging.error(response.text)
-            raise HttpOperationError(self._deserialize, response)
-        else:
             deserialized = self._deserialize('Projects', response)
+            return deserialized
 
-        return deserialized
+        logging.error("GET %s", response.url)
+        logging.error("response: %s", response.status_code)
+        logging.error(response.text)
+        raise HttpOperationError(self._deserialize, response)
 
     def _list_projects_request(self):
-        url = '/_apis/git/repositories'
+        url = '/_apis/projects'
 
-        query_paramters = {}
-        query_paramters['api-version'] = '5.0'
-
-        header_paramters = {}
-        if self._user_mgr.is_msa_account():
-            print("IS IT MSA ACCOUNT")
-            header_paramters['X-VSS-ForceMsaPassThrough'] = 'true'
-        else:
-            print("IS IT AAD ACCOUNT")
-            header_paramters['X-VSS-ForceMsaPassThrough'] = 'false'
-        
-        header_paramters['Content-Type'] = 'application/json'
-        header_paramters['Accept'] = 'application/json'
-        header_paramters['Authorization'] = 'Bearer ' + self._user_mgr.get_access_token()
-
-        request = self._client.get(url, params=query_paramters)
-        response = self._client.send(request, headers=header_paramters)
-        print(response.__dict__)
+        is_msa = OrganizationManager.is_msa_organization(self._organization_name)
+        print("is_msa: " + str(is_msa))
+        request = self._client.get(url, params={
+            'includeCapabilities': 'true',
+            'api-version': '5.0'
+        })
+        response = self._client.send(request, headers={
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-VSS-ForceMsaPassThrough': 'true' if is_msa else 'false'
+        })
         return response
 
     def _poll_project(self, project_id):
@@ -120,15 +129,15 @@ class ProjectManager(BaseManager):
     def _is_project_created(self, project_id):
         """Helper function to see the status of a project"""
         url = '/' + self._organization_name + '/_apis/operations/' + project_id
-        query_paramters = {}
 
-        header_paramters = {}
-        header_paramters['Accept'] = 'application/json'
-        if self._user_mgr.is_msa_account():
-            header_paramters['X-VSS-ForceMsaPassThrough'] = 'true'
+        is_msa = OrganizationManager.is_msa_organization(self._organization_name)
 
-        request = self._create_project_client.get(url, params=query_paramters)
-        response = self._create_project_client.send(request, headers=header_paramters)
+        request = self._create_project_client.get(url, params={})
+        response = self._create_project_client.send(request, headers={
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-VSS-ForceMsaPassThrough': 'true' if is_msa else 'false'
+        })
 
         # Handle Response
         deserialized = None

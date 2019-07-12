@@ -24,6 +24,8 @@ class OrganizationManager():
         dserialize: deserializer to process http responses into python classes
     """
 
+    msa_organization_names = set()
+
     def __init__(self, base_url='https://app.vssps.visualstudio.com', creds=None,
                  create_organization_url='https://app.vsaex.visualstudio.com'):
         """Inits OrganizationManager"""
@@ -39,6 +41,13 @@ class OrganizationManager():
         client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
         self._deserialize = Deserializer(client_models)
         self._user_mgr = UserManager(creds=self._creds)
+
+    @classmethod
+    def is_msa_organization(cls, organization_name):
+        if organization_name is None:
+            return False
+
+        return organization_name.lower() in cls.msa_organization_names
 
     def validate_organization_name(self, organization_name):
         """Validate an organization name by checking it does not already exist and that it fits name restrictions"""
@@ -77,43 +86,35 @@ class OrganizationManager():
 
     def list_organizations(self):
         """List what organizations this user is part of"""
-        # Need to do a request for each of the ids and then combine them (disabled)
         organizations_aad = self._list_organizations_request(self._user_mgr.aad_id, msa=False)
         organizations_msa = self._list_organizations_request(self._user_mgr.msa_id, msa=True)
-        organizations = organizations_msa
 
-        # Overwrite merge aad organizations with msa organizations
-        duplicated_aad_orgs = []
+        # Mark aad organizations as force_msa_pass_through = False
+        organizations = organizations_aad
+        aad_organization_ids = set([o.accountId for o in organizations.value])
+
+        # Merge msa organizations
         for msa_org in organizations_msa.value:
-            duplicated_aad_orgs.extend([
-                o for o in organizations_aad.value if o.accountId == msa_org.accountId
-            ])
-        filtered_organizations_aad = [o for o in organizations_aad.value if (o not in duplicated_aad_orgs)]
+            if msa_org.accountId not in aad_organization_ids:
+                organizations.value.append(msa_org)
+                self.__class__.msa_organization_names.add(msa_org.accountName.lower())
 
-        organizations.value += list(filtered_organizations_aad)
+        # Summarize number of organizations
         organizations.count = len(organizations.value)
-
         return organizations
 
-    def _list_organizations_request(self, member_id, msa=False):
+    def _list_organizations_request(self, member_id, msa):
         url = '/_apis/accounts'
 
-        query_paramters = {}
-        query_paramters['api-version'] = '5.0-preview.1'
-        query_paramters['memberId'] = member_id
-        #query_paramters['includeMSAAccounts'] = True
-        #query_paramters['queryOnlyOwnerAccounts'] = True
-        #query_paramters['inlcudeDisabledAccounts'] = False
-        #query_paramters['providerNamespaceId'] = 'VisualStudioOnline'
-
-        #construct header parameters
-        header_parameters = {}
-        header_parameters['Authorization'] = 'Bearer ' + self._user_mgr.get_access_token()
-        header_parameters['X-VSS-ForceMsaPassThrough'] = 'true' if msa else 'false'
-        header_parameters['Accept'] = 'application/json'
-
-        request = self._client.get(url, params=query_paramters)
-        response = self._client.send(request, headers=header_parameters)
+        request = self._client.get(url, params={
+            'api-version': '5.0-preview.1',
+            'memberId': member_id
+        })
+        response = self._client.send(request, headers={
+            'Authorization': 'Bearer {}'.format(self._user_mgr.get_access_token()),
+            'X-VSS-ForceMsaPassThrough': 'true' if msa else 'false',
+            'Accept': 'application/json'
+        })
 
         # Handle Response
         deserialized = None
@@ -124,7 +125,6 @@ class OrganizationManager():
             raise HttpOperationError(self._deserialize, response)
         else:
             deserialized = self._deserialize('Organizations', response)
-
         return deserialized
 
     def create_organization(self, region_code, organization_name):
@@ -141,11 +141,8 @@ class OrganizationManager():
         header_paramters = {}
         header_paramters['Accept'] = 'application/json'
         header_paramters['Content-Type'] = 'application/json'
-        header_paramters['Authorization'] = 'Bearer ' + self._user_mgr.get_access_token()
         if self._user_mgr.is_msa_account():
             header_paramters['X-VSS-ForceMsaPassThrough'] = 'true'
-        else:
-            header_paramters['X-VSS-ForceMsaPassThrough'] = 'false'
 
         #construct the payload
         payload = {}

@@ -10,6 +10,7 @@ from msrest.exceptions import HttpOperationError
 
 from ..user.user_manager import UserManager
 from ..base.base_manager import BaseManager
+from ..organization.organization_manager import OrganizationManager
 from . import models
 
 class PoolManager(BaseManager):
@@ -27,7 +28,7 @@ class PoolManager(BaseManager):
         self._client = ServiceClient(creds, self._config)
         client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
         self._deserialize = Deserializer(client_models)
-        self._user_mgr = UserManager(creds=self._creds)
+        self._organization_name = organization_name
 
     def list_pools(self):
         """List what pools this project has"""
@@ -38,7 +39,7 @@ class PoolManager(BaseManager):
 
         #construct header parameters
         header_paramters = {}
-        if self._user_mgr.is_msa_account():
+        if OrganizationManager.is_msa_organization(self._organization_name):
             header_paramters['X-VSS-ForceMsaPassThrough'] = 'true'
         header_paramters['Accept'] = 'application/json'
 
@@ -48,15 +49,14 @@ class PoolManager(BaseManager):
 
         # Handle Response
         deserialized = None
-        if response.status_code // 100 != 2:
-            logging.error("GET %s", request.url)
-            logging.error("response: %s", response.status_code)
-            logging.error(response.text)
-            raise HttpOperationError(self._deserialize, response)
-        else:
+        if response.status_code == 200:
             deserialized = self._deserialize('Pools', response)
+            return deserialized
 
-        return deserialized
+        logging.error("GET %s", request.url)
+        logging.error("response: %s", response.status_code)
+        logging.error(response.text)
+        raise HttpOperationError(self._deserialize, response)
 
     def close_connection(self):
         self._client.close()

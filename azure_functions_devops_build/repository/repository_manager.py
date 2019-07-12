@@ -6,6 +6,7 @@ from msrest.service_client import ServiceClient
 from msrest import Configuration, Deserializer
 import vsts.git.v4_1.models.git_repository_create_options as git_repository_create_options
 from vsts.exceptions import VstsServiceError
+from ..organization.organization_manager import OrganizationManager
 
 from ..base.base_manager import BaseManager
 from . import models
@@ -33,6 +34,7 @@ class RepositoryManager(BaseManager):
 
     def __init__(self, organization_name="", project_name="", creds=None):
         base_url = 'https://dev.azure.com'
+        is_msa = OrganizationManager.is_msa_organization(organization_name)
         self._config = Configuration(base_url=base_url)
         self._client = ServiceClient(creds, self._config)
         client_models = {k: v for k, v in models.__dict__.items() if isinstance(v, type)}
@@ -68,6 +70,7 @@ class RepositoryManager(BaseManager):
         git_remove_remote(remote_name)
 
     def get_azure_devops_repository_branches(self, repository_name):
+        print("get_azure_devops_repository_branches")
         try:
             result = self._git_client.get_branches(repository_name, self._project_name)
         except VstsServiceError:
@@ -75,6 +78,7 @@ class RepositoryManager(BaseManager):
         return result
 
     def get_azure_devops_repository(self, repository_name):
+        print("get_azure_devops_repository")
         try:
             result = self._git_client.get_repository(repository_name, self._project_name)
         except VstsServiceError:
@@ -82,7 +86,9 @@ class RepositoryManager(BaseManager):
         return result
 
     def create_repository(self, repository_name):
+        print("create_repository")
         project = self._get_project_by_name(self._project_name)
+        print("create_repository_after_get_project_by_name")
         git_repo_options = git_repository_create_options.GitRepositoryCreateOptions(
             name=repository_name,
             project=project
@@ -90,6 +96,7 @@ class RepositoryManager(BaseManager):
         return self._git_client.create_repository(git_repo_options)
 
     def list_repositories(self):
+        print("list_repositories")
         return self._git_client.get_repositories(self._project_name)
 
     def list_commits(self, repository_name):

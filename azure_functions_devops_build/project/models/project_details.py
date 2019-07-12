@@ -13,12 +13,14 @@ class ProjectDetails(Model):
         'state': {'key': 'state', 'type': 'str'},
         'revision': {'key': 'revision', 'type': 'str'},
         'visibility': {'key': 'visibility', 'type': 'str'},
+        'valid': {'key': 'valid', 'type': 'bool'}
     }
 
-    def __init__(self, id=None, name=None, url=None, state=None, revision=None, visibility=None):
+    def __init__(self, id=None, name=None, url=None, state=None, revision=None, visibility=None, valid=None):
         self.id = id
         self.name = name
         self.url = url
         self.state = state
         self.revision = revision
         self.visibility = visibility
+        self.valid = valid
